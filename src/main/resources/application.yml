@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: bank
+  #  mvc.static-path-pattern: /content/**
+  web.resources.static-locations: classpath:/static/
+  datasource:
+    username: ${BANK_USER:postgres}
+    password: ${BANK_PASSWORD:root}
+    url: jdbc:postgresql://localhost:5432/bank?currentSchema=bank
+  jpa:
+    show-sql: true
+    properties:
+      hibernate.format_sql: true
+      hibernate.batch_fetch_style: PADDED
+      hibernate.default_batch_fetch_size: 2
+      hibernate.hbm2ddl.auto: update
+
+jkx.address: communal_services
+telephone.address: telephone
+tax.address: tax

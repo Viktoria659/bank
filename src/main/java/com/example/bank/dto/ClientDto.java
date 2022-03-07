@@ -2,6 +2,7 @@ package com.example.bank.dto;
 
 import lombok.Builder;
 import lombok.Value;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,6 +15,8 @@ public class ClientDto {
     String firstname;
     String surname;
     String patronymic;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
     Date birthday;
     UserDto user;
     List<AccountDto> accounts = new ArrayList<>();

@@ -97,34 +97,24 @@ public class UserServiceTest extends AbstractIntegrationTest {
 
     @Test
     public void addUserBase_allField_successfulSave() {
-        UserDto userDto = createUserDto(null).toBuilder().username("addUser").build();
+        String username = String.valueOf(UUID.randomUUID());
 
-        Optional<UserDto> res = createActualUserDto(userService.addUserBase(userDto));
+        UserDto userDto = createUserDto(null).toBuilder().username(username).build();
 
-        assertEquals(toJson(createActualUserDto(Optional.of(userDto)).get()), toJson(res.get()));
-    }
+        UserDto res = createActualUserDto(userService.addUserBase(userDto).get());
 
-    @Test
-    public void getUser_error() {
-        String username = "1234";
-
-        Exception exception = assertThrows(NotFoundException.class, () -> userService.getUser(username));
-
-        String expectedMessage = String.format("Object with username: %s does not exist", username);
-        String actualMessage = exception.getMessage();
-        
-        assertNotNull(actualMessage);
-        assertEquals(actualMessage, expectedMessage);
+        UserDto userExpected = createActualUserDto(userDto);
+        assertEquals(toJson(userExpected), toJson(res));
     }
 
     @Test
     public void getUser_successfulGetUser() {
-        String username = getUsername();
+        UserDto userExpected = createWithoutAccountsAndPassword(getUser());
+        String username = userExpected.getUsername();
+
         Optional<UserDto> res = userService.getUser(username);
 
-        if (res.isPresent()) res = toClientAccountsNull(res.get());
-
-        UserDto userExpected = createWithoutAccounts(username);
+        if (res.isPresent()) res = toPasswordAndClientAccountsNull(res.get());
 
         assertTrue(res.isPresent());
         assertEquals(toJson(userExpected), toJson(res.get()));
@@ -236,50 +226,41 @@ public class UserServiceTest extends AbstractIntegrationTest {
         Long userId = getUserId();
         UserDto userDto = createUserDto(userId).toBuilder().role(RoleDto.builder().roleId(1L).build()).build();
 
-        UserDto res = userService.update(userDto).get().toBuilder()
+        Optional<UserDto> res = toPasswordAndClientAccountsNull(userService.update(userDto).get().toBuilder()
                 .role(RoleDto.builder().roleId(1L).build())
-                .build();
+                .build());
 
-        assertEquals(toJson(userDto), toJson(res));
+        assertTrue(res.isPresent());
+        assertEquals(toJson(toPasswordAndClientAccountsNull(userDto).get()), toJson(res.get()));
     }
 
-    public String getUsername() {
-        return userService.getUsers().stream().findAny().get().iterator().next().getUsername();
+    private UserDto getUser() {
+        return userService.getUsers().stream().findAny().get().iterator().next();
     }
 
-    public Long getUserId() {
+    private Long getUserId() {
         return userService.getUsers().stream().findAny().get().iterator().next().getId();
     }
 
-    private UserDto createWithoutAccounts(String username) {
-        return UserDto.builder()
-                .id(getUserId())
-                .username(username)
-                .password("password")
-                .active(true)
-                .role(RoleDto.builder()
-                        .roleId(1L)
-                        .value("ROLE_USER")
-                        .build())
-                .client(ClientDto.builder()
-                        .id(getUserId())
-                        .firstname("firstname")
-                        .surname("surname")
-                        .build())
-                .build();
+    private UserDto createWithoutAccountsAndPassword(UserDto userDto) {
+        userDto.getClient().getAccounts().clear();
+        return userDto.toBuilder().password(null).build();
     }
 
-    private Optional<UserDto> toClientAccountsNull(UserDto res) {
+    private Optional<UserDto> toPasswordAndClientAccountsNull(UserDto res) {
         return Optional.of(res.toBuilder()
+                .password(null)
                 .client(res.getClient().toBuilder()
                         .build())
                 .build());
     }
 
     private UserDto createUserDto(Long clientId) {
+        String username = String.valueOf(UUID.randomUUID());
+        ;
         return UserDto.builder()
                 .id(clientId)
-                .username("user")
+                .username(username)
                 .password("123")
                 .active(true)
                 .client(ClientDto.builder()
@@ -290,13 +271,12 @@ public class UserServiceTest extends AbstractIntegrationTest {
                 .build();
     }
 
-    private Optional<UserDto> createActualUserDto(Optional<UserDto> userDto) {
-        return userDto
-                .map(e -> e.toBuilder()
-                        .id(null)
-                        .client(e.getClient().toBuilder().id(null).build())
-                        .role(RoleDto.builder().value(null).build())
-                        .build()
-                );
+    private UserDto createActualUserDto(UserDto userDto) {
+        return userDto.toBuilder()
+                .id(null)
+                .password(null)
+                .client(userDto.getClient().toBuilder().id(null).build())
+                .role(RoleDto.builder().value(null).build())
+                .build();
     }
 }

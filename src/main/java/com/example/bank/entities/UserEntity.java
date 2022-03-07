@@ -1,9 +1,6 @@
 package com.example.bank.entities;
 
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
@@ -13,6 +10,7 @@ import java.io.Serializable;
 @Entity
 @Data
 @NoArgsConstructor
+@ToString(exclude = "client")
 @EqualsAndHashCode(exclude = {"client", "role"})
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(schema = "bank", name = "usr")

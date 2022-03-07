@@ -14,8 +14,8 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * @author Filippova_Viktoria
@@ -58,34 +58,34 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public Optional<Set<ClientDto>> getClients() {
+    public Optional<List<ClientDto>> getClients() {
         log.info("Start found all clients");
-        Set<ClientDto> dtoSet = mapper.entitySetToDtoSet(repo.findAll());
-        if (dtoSet.isEmpty()) {
+        List<ClientDto> dtoList = mapper.entityToDto(repo.findAll());
+        if (dtoList.isEmpty()) {
             log.error("Objects do not exists!");
             return Optional.empty();
         } else {
-            setAccounts(dtoSet);
-            log.info("Was found {} clients", dtoSet.size());
-            return Optional.of(dtoSet);
+            setAccounts(dtoList);
+            log.info("Was found {} clients", dtoList.size());
+            return Optional.of(dtoList);
         }
     }
 
-    private void setAccounts(Set<ClientDto> clientDtoSet) {
-        setAccountHelper(accountService.getAccounts(), clientDtoSet);
+    private void setAccounts(List<ClientDto> clientDtoList) {
+        setAccountHelper(accountService.getAccounts(), clientDtoList);
     }
 
     private void setAccount(ClientDto clientDto) {
         String username = clientDto.getUser().getUsername();
-        setAccountHelper(accountService.getAccountsByUserUsername(username), Set.of(clientDto));
+        setAccountHelper(accountService.getAccountsByUserUsername(username), List.of(clientDto));
     }
 
-    private void setAccountHelper(Optional<Set<AccountDto>> accountDtoSet, Set<ClientDto> clientDtoSet) {
+    private void setAccountHelper(Optional<List<AccountDto>> accountDtoList, List<ClientDto> clientDtoList) {
         log.info("Start add accounts to clients");
-        accountDtoSet
+        accountDtoList
                 .ifPresent(accountSet -> accountSet.forEach(account -> {
                             Long clientId = account.getClient().getId();
-                            clientDtoSet.stream()
+                            clientDtoList.stream()
                                     .filter(clientDto -> clientDto.getId().equals(clientId))
                                     .forEach(clientDto -> clientDto.getAccounts().add(account));
                         })

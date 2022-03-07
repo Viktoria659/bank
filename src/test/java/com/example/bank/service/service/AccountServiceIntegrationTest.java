@@ -7,40 +7,26 @@ import com.example.bank.util.error.NoEnoughMoneyException;
 import com.example.bank.util.error.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.List;
 import java.util.Optional;
 
 import static com.example.bank.service.util.TestUtil.toJson;
-import static com.example.bank.util.Constants.MINUS;
-import static com.example.bank.util.Constants.PLUS;
+import static com.example.bank.util.Constant.MINUS;
+import static com.example.bank.util.Constant.PLUS;
 import static org.junit.jupiter.api.Assertions.*;
 
+@ContextConfiguration
 public class AccountServiceIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     AccountService accountService;
 
     @Test
-    public void addAccount_error() {
-        String username = "123";
-
-        Exception exception = assertThrows(NotFoundException.class, () -> accountService.addAccount(username));
-
-        String expectedMessage = String.format("Object with username: %s does not exist", username);
-        String actualMessage = exception.getMessage();
-
-        assertNotNull(actualMessage);
-        assertEquals(actualMessage, expectedMessage);
-    }
-
-    @Test
     public void addAccount() {
-        String username = "username";
-        String username_2 = "username-2";
-
-        Optional<AccountDto> res = accountService.addAccount(username);
-        Optional<AccountDto> res_2 = accountService.addAccount(username_2);
+        Optional<AccountDto> res = accountService.addAccount();
+        Optional<AccountDto> res_2 = accountService.addAccount();
 
         assertTrue(res.isPresent() && res_2.isPresent());
 
@@ -79,7 +65,7 @@ public class AccountServiceIntegrationTest extends AbstractIntegrationTest {
         assertTrue(res.isPresent());
         assertNotNull(res.get().getClient());
 
-        assertEquals(toJson(accountDto), toJson(res.get()));
+        assertEquals(toJson(toNullTime(accountDto)), toJson(toNullTime(res.get())));
     }
 
     @Test
@@ -88,31 +74,6 @@ public class AccountServiceIntegrationTest extends AbstractIntegrationTest {
 
         assertTrue(accounts.isPresent());
         assertTrue(accounts.get().size() > 0);
-    }
-
-    @Test
-    public void getAccountsByUserUsername_error() {
-        String username = "123";
-
-        Exception exception = assertThrows(NotFoundException.class, () ->
-                accountService.getAccountsByUserUsername(username));
-
-        String expectedMessage = String.format("Object with username: %s does not exist", username);
-        String actualMessage = exception.getMessage();
-
-        assertNotNull(actualMessage);
-        assertEquals(actualMessage, expectedMessage);
-    }
-
-    @Test
-    public void getAccountsByUserUsername() {
-        AccountDto accountDto = createAccountDto();
-        String username = accountDto.getClient().getUser().getUsername();
-
-        Optional<Set<AccountDto>> res = accountService.getAccountsByUserUsername(username);
-
-        assertTrue(res.isPresent());
-        assertEquals(toJson(Set.of(accountDto)), toJson(res.get()));
     }
 
     @Test
@@ -134,7 +95,7 @@ public class AccountServiceIntegrationTest extends AbstractIntegrationTest {
         AccountDto accountDto = createAccountDto();
 
         Exception exception = assertThrows(NoEnoughMoneyException.class, () ->
-                accountService.update(accountDto.getAccountId(), 500L, MINUS, null));
+                accountService.update(accountDto.getAccountId(), 5000000000000000L, MINUS, null));
 
         String expectedMessage = "Not enough money on balance";
         String actualMessage = exception.getMessage();
@@ -158,21 +119,22 @@ public class AccountServiceIntegrationTest extends AbstractIntegrationTest {
     public void update_Minus() {
         AccountDto accountDto = createAccountDto();
         long money = 50L;
+        accountService.update(accountDto.getAccountId(), money, PLUS, "PLUS");
 
         Optional<AccountDto> res = accountService.update(accountDto.getAccountId(), money, MINUS, "MINUS");
 
         assertTrue(res.isPresent());
-        assertEquals(res.get().getBalance(), accountDto.getBalance() - money);
+        assertEquals(res.get().getBalance(), accountDto.getBalance());
     }
 
     @Test
     public void transferBetweenAccounts_error() {
         AccountDto accountFrom = createAccountDto();
-        Optional<AccountDto> accountTo = accountService.addAccount("username");
+        Optional<AccountDto> accountTo = accountService.addAccount();
 
         Exception exception = assertThrows(NoEnoughMoneyException.class, () ->
                 accountService.transferBetweenAccounts(accountFrom.getAccountId(),
-                        accountTo.get().getAccountId(), 500L, null));
+                        accountTo.get().getAccountId(), 500000000000L, null));
 
         String expectedMessage = "Not enough money on balance";
         String actualMessage = exception.getMessage();
@@ -187,7 +149,7 @@ public class AccountServiceIntegrationTest extends AbstractIntegrationTest {
 
         Optional<AccountDto> accountFrom = accountService.update(createAccountDto().getAccountId(),
                 money, PLUS, null);
-        Optional<AccountDto> accountTo = accountService.addAccount("username");
+        Optional<AccountDto> accountTo = accountService.addAccount();
 
         assertTrue(accountFrom.isPresent());
         assertTrue(accountTo.isPresent());
@@ -208,7 +170,7 @@ public class AccountServiceIntegrationTest extends AbstractIntegrationTest {
 
         Optional<AccountDto> accountFrom = accountService.update(createAccountDto().getAccountId(),
                 money, PLUS, comment);
-        Optional<AccountDto> accountTo = accountService.addAccount("username");
+        Optional<AccountDto> accountTo = accountService.addAccount();
 
         assertTrue(accountFrom.isPresent());
         assertTrue(accountTo.isPresent());
@@ -237,7 +199,7 @@ public class AccountServiceIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void delete_validId() {
-        Optional<AccountDto> account = accountService.addAccount("username");
+        Optional<AccountDto> account = accountService.addAccount();
         assertTrue(account.isPresent());
 
         Optional<AccountDto> res = accountService.deleteById(account.get().getAccountId());

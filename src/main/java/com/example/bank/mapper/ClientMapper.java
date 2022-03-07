@@ -1,8 +1,6 @@
 package com.example.bank.mapper;
 
-import com.example.bank.dto.AccountDto;
 import com.example.bank.dto.ClientDto;
-import com.example.bank.entities.AccountEntity;
 import com.example.bank.entities.ClientEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

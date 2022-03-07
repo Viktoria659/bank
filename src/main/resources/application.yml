@@ -1,7 +1,6 @@
 spring:
   application:
     name: bank
-  #  mvc.static-path-pattern: /content/**
   web.resources.static-locations: classpath:/static/
   datasource:
     username: ${BANK_USER:postgres}
@@ -13,7 +12,7 @@ spring:
       hibernate.format_sql: true
       hibernate.batch_fetch_style: PADDED
       hibernate.default_batch_fetch_size: 2
-      hibernate.hbm2ddl.auto: update
+      hibernate.hbm2ddl.auto: none
 
 jkx.address: communal_services
 telephone.address: telephone

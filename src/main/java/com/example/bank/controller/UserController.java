@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -35,19 +35,28 @@ public class UserController {
                 .orElseGet(() -> ResponseEntity.badRequest().build());
     }
 
+    @Operation(summary = "Поиск текущего пользователя")
+    @GetMapping()
+    public ResponseEntity<UserDto> findCurrentUser() {
+        log.info("Search current user");
+        return service.getUser()
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @Operation(summary = "Поиск пользователя по username")
     @GetMapping("/{username}")
     public ResponseEntity<UserDto> findByUsername(@Parameter(description = "Username пользователя", example = "username")
                                                   @PathVariable final String username) {
         log.info("Search user by username");
-        return service.getUser(username)
+        return service.getUser()
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Operation(summary = "Поиск всех пользователей")
     @GetMapping("/get-users")
-    public ResponseEntity<Set<UserDto>> getUsers() {
+    public ResponseEntity<List<UserDto>> getUsers() {
         log.info("Search all users");
         return service.getUsers()
                 .map(ResponseEntity::ok)

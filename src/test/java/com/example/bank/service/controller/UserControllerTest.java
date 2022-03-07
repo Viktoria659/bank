@@ -3,6 +3,7 @@ package com.example.bank.service.controller;
 import com.example.bank.dto.ClientDto;
 import com.example.bank.dto.RoleDto;
 import com.example.bank.dto.UserDto;
+import com.example.bank.service.UserService;
 import com.example.bank.service.util.AbstractControllerTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +29,10 @@ public class UserControllerTest extends AbstractControllerTest {
 
     @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    UserService service;
+
     private static final String partOfPath = "/user";
 
     @BeforeEach
@@ -71,8 +76,11 @@ public class UserControllerTest extends AbstractControllerTest {
     @Test
     public void updateUser_Ok() throws Exception {
 
-        UserDto userDto = createUserDto("newUsername").toBuilder()
-                .id(1475L)
+        String username = String.valueOf(UUID.randomUUID());
+        UserDto newUser = addUserDto(username);
+
+        UserDto userDto = createUserDto(username).toBuilder()
+                .id(newUser.getId())
                 .role(RoleDto.builder().roleId(1L).build()).build();
 
         MvcResult res = mvc.perform(MockMvcRequestBuilders
@@ -125,14 +133,19 @@ public class UserControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void getUser_NotFound() throws Exception {
+    public void getCurrentUser_Ok() throws Exception {
 
         MvcResult res = mvc.perform(MockMvcRequestBuilders
-                        .get(partOfPath + "/{username}", "123"))
-                .andExpect(status().isNotFound())
+                        .get(partOfPath))
+                .andExpect(status().isOk())
                 .andReturn();
 
         assertFalse(res.getResponse().getContentAsString().isBlank());
+    }
+
+    private UserDto addUserDto(String username) {
+        return service.addUserBase(createUserDto(username))
+                .orElseThrow(() -> new RuntimeException("Не удалось создать пользователя"));
     }
 
     private UserDto createUserDto(String username) {
@@ -147,7 +160,7 @@ public class UserControllerTest extends AbstractControllerTest {
                 .build();
     }
 
-    public static String asJsonString(final Object obj) {
+    private static String asJsonString(Object obj) {
         try {
             return new ObjectMapper().writeValueAsString(obj);
         } catch (Exception e) {

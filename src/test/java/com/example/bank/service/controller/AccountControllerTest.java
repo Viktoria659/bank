@@ -1,5 +1,7 @@
 package com.example.bank.service.controller;
 
+import com.example.bank.dto.AccountDto;
+import com.example.bank.service.AccountService;
 import com.example.bank.service.util.AbstractControllerTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,6 +13,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import static com.example.bank.util.Constant.PLUS;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -22,6 +25,8 @@ public class AccountControllerTest extends AbstractControllerTest {
     @Autowired
     private MockMvc mvc;
     private static final String partOfPath = "/account";
+    @Autowired
+    AccountService service;
 
     @BeforeEach
     public void init() {
@@ -32,7 +37,6 @@ public class AccountControllerTest extends AbstractControllerTest {
 
     @Test
     public void addAccount_Ok() throws Exception {
-
         MvcResult res = mvc.perform(MockMvcRequestBuilders
                         .post(partOfPath + "/add-account/{username}", "username"))
                 .andExpect(status().isOk())
@@ -44,11 +48,12 @@ public class AccountControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void addAccount_NotFound() throws Exception {
-
+    public void addAccountCurrentUser_Ok() throws Exception {
         MvcResult res = mvc.perform(MockMvcRequestBuilders
-                        .post(partOfPath + "/add-account/{username}", "123"))
-                .andExpect(status().isNotFound())
+                        .post(partOfPath + "/add-account"))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.accountId").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.client.id").exists())
                 .andReturn();
 
         assertFalse(res.getResponse().getContentAsString().isBlank());
@@ -56,11 +61,12 @@ public class AccountControllerTest extends AbstractControllerTest {
 
     @Test
     public void findById_Ok() throws Exception {
-
+        AccountDto accountDto = createAccountDto();
         MvcResult res = mvc.perform(MockMvcRequestBuilders
-                        .get(partOfPath + "/{id}", "860"))
+                        .get(partOfPath + "/{id}", accountDto.getAccountId()))
                 .andExpect(status().isOk())
                 .andReturn();
+        deleteAccountDto(accountDto.getAccountId());
 
         assertFalse(res.getResponse().getContentAsString().isBlank());
     }
@@ -88,6 +94,17 @@ public class AccountControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    public void getAccountsCurrent_Ok() throws Exception {
+
+        MvcResult res = mvc.perform(MockMvcRequestBuilders
+                        .get(partOfPath + "/get-accounts-current-user"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertFalse(res.getResponse().getContentAsString().isBlank());
+    }
+
+    @Test
     public void getAccountsByUserUsername_Ok() throws Exception {
 
         MvcResult res = mvc.perform(MockMvcRequestBuilders
@@ -99,23 +116,14 @@ public class AccountControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void getAccountsByUserUsername_NotFound() throws Exception {
-
-        MvcResult res = mvc.perform(MockMvcRequestBuilders
-                        .get(partOfPath + "/get-accounts/{username}", "1"))
-                .andExpect(status().isNotFound())
-                .andReturn();
-
-        assertFalse(res.getResponse().getContentAsString().isBlank());
-    }
-
-    @Test
     public void updateRefillBalance_Ok() throws Exception {
-
+        AccountDto accountDto = createAccountDto();
         MvcResult res = mvc.perform(MockMvcRequestBuilders
-                        .put(partOfPath + "/refill-account-balance/{id}/{money}", "860", "5000"))
+                        .put(partOfPath + "/refill-account-balance/{id}/{money}",
+                                accountDto.getAccountId(), "50"))
                 .andExpect(status().isOk())
                 .andReturn();
+        deleteAccountDto(accountDto.getAccountId());
 
         assertFalse(res.getResponse().getContentAsString().isBlank());
     }
@@ -133,11 +141,14 @@ public class AccountControllerTest extends AbstractControllerTest {
 
     @Test
     public void updateWithdrawBalance_Ok() throws Exception {
+        AccountDto accountDto = createAccountDto();
 
         MvcResult res = mvc.perform(MockMvcRequestBuilders
-                        .put(partOfPath + "/withdraw-account-balance/{id}/{money}", "860", "500"))
+                        .put(partOfPath + "/withdraw-account-balance/{id}/{money}",
+                                accountDto.getAccountId(), "100"))
                 .andExpect(status().isOk())
                 .andReturn();
+        deleteAccountDto(accountDto.getAccountId());
 
         assertFalse(res.getResponse().getContentAsString().isBlank());
     }
@@ -155,59 +166,69 @@ public class AccountControllerTest extends AbstractControllerTest {
 
     @Test
     public void updateWithdrawBalance_BadRequest() throws Exception {
-
+        AccountDto accountDto = createAccountDto();
         MvcResult res = mvc.perform(MockMvcRequestBuilders
-                        .put(partOfPath + "/withdraw-account-balance/{id}/{money}", "860", "50000"))
+                        .put(partOfPath + "/withdraw-account-balance/{id}/{money}",
+                                accountDto.getAccountId(), "50000"))
                 .andExpect(status().isBadRequest())
                 .andReturn();
+        deleteAccountDto(accountDto.getAccountId());
 
         assertFalse(res.getResponse().getContentAsString().isBlank());
     }
 
     @Test
     public void transferBetweenAccounts_NotFound_From() throws Exception {
-
+        AccountDto accountDto = createAccountDto();
         MvcResult res = mvc.perform(MockMvcRequestBuilders
                         .put(partOfPath + "/transfer-between-accounts/{fromId}/{toId}/{money}/{comment}",
-                                "1", "851", "100", "null"))
+                                "1", accountDto.getAccountId(), "100", "null"))
                 .andExpect(status().isNotFound())
                 .andReturn();
+        deleteAccountDto(accountDto.getAccountId());
 
         assertFalse(res.getResponse().getContentAsString().isBlank());
     }
 
     @Test
     public void transferBetweenAccounts_NotFound_To() throws Exception {
-
+        AccountDto accountDto = createAccountDto();
         MvcResult res = mvc.perform(MockMvcRequestBuilders
                         .put(partOfPath + "/transfer-between-accounts/{fromId}/{toId}/{money}/{comment}",
-                                "860", "1", "100", "null"))
+                                accountDto.getAccountId(), "1", "100", "null"))
                 .andExpect(status().isNotFound())
                 .andReturn();
+        deleteAccountDto(accountDto.getAccountId());
 
         assertFalse(res.getResponse().getContentAsString().isBlank());
     }
 
     @Test
     public void transferBetweenAccounts_BadRequest() throws Exception {
-
+        AccountDto accountDtoFrom = createAccountDto();
+        AccountDto accountDtoTo = createAccountDto();
         MvcResult res = mvc.perform(MockMvcRequestBuilders
                         .put(partOfPath + "/transfer-between-accounts/{fromId}/{toId}/{money}/{comment}",
-                                "860", "851", "1000000000", "null"))
+                                accountDtoFrom.getAccountId(), accountDtoTo.getAccountId(), "1000000000", "null"))
                 .andExpect(status().isBadRequest())
                 .andReturn();
+        deleteAccountDto(accountDtoFrom.getAccountId());
+        deleteAccountDto(accountDtoTo.getAccountId());
 
         assertFalse(res.getResponse().getContentAsString().isBlank());
     }
 
     @Test
     public void transferBetweenAccounts_Ok() throws Exception {
-
+        AccountDto accountDtoFrom = createAccountDto();
+        AccountDto accountDtoTo = createAccountDto();
         MvcResult res = mvc.perform(MockMvcRequestBuilders
                         .put(partOfPath + "/transfer-between-accounts/{fromId}/{toId}/{money}/{comment}",
-                                "860", "861", "100", "newComment"))
+                                accountDtoFrom.getAccountId(), accountDtoTo.getAccountId(), "50", "newComment"))
                 .andExpect(status().isOk())
                 .andReturn();
+        deleteAccountDto(accountDtoFrom.getAccountId());
+        deleteAccountDto(accountDtoTo.getAccountId());
 
         assertTrue(res.getResponse().getContentAsString().isBlank());
     }
@@ -226,24 +247,26 @@ public class AccountControllerTest extends AbstractControllerTest {
 
     @Test
     public void payForCommunalServices_BadRequest() throws Exception {
-
+        AccountDto accountDto = createAccountDto();
         MvcResult res = mvc.perform(MockMvcRequestBuilders
                         .put(partOfPath + "/pay-for-communal-services/{fromId}/{money}/{comment}",
-                                "861", "100", "null"))
+                                accountDto.getAccountId(), "100000000", "null"))
                 .andExpect(status().isBadRequest())
                 .andReturn();
+        deleteAccountDto(accountDto.getAccountId());
 
         assertFalse(res.getResponse().getContentAsString().isBlank());
     }
 
     @Test
     public void payForCommunalServices_Ok() throws Exception {
-
+        AccountDto accountDto = createAccountDto();
         MvcResult res = mvc.perform(MockMvcRequestBuilders
                         .put(partOfPath + "/pay-for-communal-services/{fromId}/{money}/{comment}",
-                                "860", "100", "ЖКХ"))
+                                accountDto.getAccountId(), "50", "ЖКХ"))
                 .andExpect(status().isOk())
                 .andReturn();
+        deleteAccountDto(accountDto.getAccountId());
 
         assertTrue(res.getResponse().getContentAsString().isBlank());
     }
@@ -262,24 +285,26 @@ public class AccountControllerTest extends AbstractControllerTest {
 
     @Test
     public void payForTelephone_BadRequest() throws Exception {
-
+        AccountDto accountDto = createAccountDto();
         MvcResult res = mvc.perform(MockMvcRequestBuilders
                         .put(partOfPath + "/pay-for-telephone/{fromId}/{money}/{comment}",
-                                "861", "100", "null"))
+                                accountDto.getAccountId(), "1000000", "null"))
                 .andExpect(status().isBadRequest())
                 .andReturn();
+        deleteAccountDto(accountDto.getAccountId());
 
         assertFalse(res.getResponse().getContentAsString().isBlank());
     }
 
     @Test
     public void payForTelephone_Ok() throws Exception {
-
+        AccountDto accountDto = createAccountDto();
         MvcResult res = mvc.perform(MockMvcRequestBuilders
                         .put(partOfPath + "/pay-for-telephone/{fromId}/{money}/{comment}",
-                                "860", "100", "ЖКХ"))
+                                accountDto.getAccountId(), "100", "ЖКХ"))
                 .andExpect(status().isOk())
                 .andReturn();
+        deleteAccountDto(accountDto.getAccountId());
 
         assertTrue(res.getResponse().getContentAsString().isBlank());
     }
@@ -298,25 +323,49 @@ public class AccountControllerTest extends AbstractControllerTest {
 
     @Test
     public void payForTax_BadRequest() throws Exception {
-
+        AccountDto accountDto = createAccountDto();
         MvcResult res = mvc.perform(MockMvcRequestBuilders
                         .put(partOfPath + "/pay-for-tax/{fromId}/{money}/{comment}",
-                                "861", "100", "null"))
+                                accountDto.getAccountId(), "100000", "null"))
                 .andExpect(status().isBadRequest())
                 .andReturn();
+        deleteAccountDto(accountDto.getAccountId());
 
         assertFalse(res.getResponse().getContentAsString().isBlank());
     }
 
     @Test
     public void payForTax_Ok() throws Exception {
-
+        AccountDto accountDto = createAccountDto();
         MvcResult res = mvc.perform(MockMvcRequestBuilders
                         .put(partOfPath + "/pay-for-tax/{fromId}/{money}/{comment}",
-                                "860", "100", "ЖКХ"))
+                                accountDto.getAccountId(), "100", "ЖКХ"))
+                .andExpect(status().isOk())
+                .andReturn();
+        deleteAccountDto(accountDto.getAccountId());
+
+        assertTrue(res.getResponse().getContentAsString().isBlank());
+    }
+
+    @Test
+    public void deleteById_Ok() throws Exception {
+        AccountDto accountDto = createAccountDto();
+        MvcResult res = mvc.perform(MockMvcRequestBuilders
+                        .delete(partOfPath + "/{id}", accountDto.getAccountId()))
                 .andExpect(status().isOk())
                 .andReturn();
 
         assertTrue(res.getResponse().getContentAsString().isBlank());
+    }
+
+    private void deleteAccountDto(Long id) {
+        service.deleteById(id)
+                .orElseThrow(() -> new RuntimeException("Не удалось удалить аккаунт"));
+    }
+
+    private AccountDto createAccountDto() {
+        return service.addAccount()
+                .map(dto -> service.update(dto.getAccountId(), 100L, PLUS, "PLUS").get())
+                .orElseThrow(() -> new RuntimeException("Не удалось создать аккаунт"));
     }
 }

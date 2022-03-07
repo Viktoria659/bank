@@ -16,8 +16,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
-import static com.example.bank.util.Constants.MINUS;
-import static com.example.bank.util.Constants.PLUS;
+import static com.example.bank.util.Constant.MINUS;
+import static com.example.bank.util.Constant.PLUS;
 
 @Slf4j
 @RestController
@@ -29,11 +29,20 @@ public class AccountController {
     AccountService service;
 
     @Operation(summary = "Добавление нового счёта")
+    @PostMapping("/add-account")
+    public ResponseEntity<AccountDto> addAccount() {
+        log.info("Add account");
+        return service.addAccount()
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.badRequest().build());
+    }
+
+    @Operation(summary = "Добавление нового счёта")
     @PostMapping("/add-account/{username}")
     public ResponseEntity<AccountDto> addAccount(@Parameter(description = "Username пользователя")
                                                  @PathVariable final String username) {
         log.info("Add account");
-        return service.addAccount(username)
+        return service.addAccount()
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.badRequest().build());
     }
@@ -57,12 +66,21 @@ public class AccountController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @Operation(summary = "Поиск всех счетов текущего клиента")
+    @GetMapping("/get-accounts-current-user")
+    public ResponseEntity<List<AccountDto>> getAccountsByCurrentUser() {
+        log.info("Search all current user's accounts");
+        return service.getAccountsByCurrentUser()
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @Operation(summary = "Поиск всех счетов клиента")
     @GetMapping("/get-accounts/{username}")
     public ResponseEntity<List<AccountDto>> getAccountsByUserUsername(@Parameter(description = "Username пользователя")
                                                                      @PathVariable final String username) {
         log.info("Search all accounts");
-        return service.getAccountsByUserUsername(username)
+        return service.getAccounts()
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -107,13 +125,15 @@ public class AccountController {
 
     @Operation(summary = "Перевод средств за ЖКХ")
     @PutMapping("/pay-for-communal-services/{fromId}/{money}/{comment}")
-    public ResponseEntity<?> payForCommunalServices(@Parameter(description = "Идентификатор счёта снятия")
+    public ResponseEntity<?> payForCommunalServices(HttpServletResponse res, HttpServletRequest req,
+                                                    @Parameter(description = "Идентификатор счёта снятия")
                                                     @PathVariable final Long fromId,
                                                     @Parameter(description = "Сумма перевода")
                                                     @PathVariable final Long money,
                                                     @Parameter(description = "Цель переводаа")
-                                                    @PathVariable String comment) {
-        log.info("Transfer between accounts");
+                                                    @PathVariable String comment
+    ) {
+        log.info("Pay for communal services: {} money from accountId: {}", fromId, money);
         service.transferBetweenAccountAndJkx(fromId, money, comment);
         return ResponseEntity.ok().build();
     }
@@ -125,8 +145,8 @@ public class AccountController {
                                              @Parameter(description = "Сумма перевода")
                                              @PathVariable final Long money,
                                              @Parameter(description = "Цель переводаа")
-                                             @PathVariable String comment) {
-        log.info("Transfer between accounts");
+                                             @PathVariable(required = false) String comment) {
+        log.info("Pay for telephone: {} money from accountId: {}", fromId, money);
         service.transferBetweenAccountAndTelephone(fromId, money, comment);
         return ResponseEntity.ok().build();
     }
@@ -139,11 +159,17 @@ public class AccountController {
                                        @PathVariable final Long money,
                                        @Parameter(description = "Цель переводаа")
                                        @PathVariable String comment) {
-        log.info("Transfer between accounts");
+        log.info("Pay for tax: {} money from accountId: {}", fromId, money);
         service.transferBetweenAccountAndTax(fromId, money, comment);
         return ResponseEntity.ok().build();
     }
+
+    @Operation()
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@Parameter(description = "Идентификатор счёта")
+                       @PathVariable Long id) {
+        log.info("Delete account");
+        service.deleteById(id);
+        return ResponseEntity.ok().build();
+    }
 }
-
-
-

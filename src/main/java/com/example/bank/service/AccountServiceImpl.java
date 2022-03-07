@@ -4,9 +4,11 @@ import com.example.bank.dto.AccountDto;
 import com.example.bank.dto.ClientDto;
 import com.example.bank.mapper.AccountMapper;
 import com.example.bank.repo.AccountRepo;
+import com.example.bank.util.JwtUtil;
 import com.example.bank.util.error.NoEnoughMoneyException;
 import com.example.bank.util.error.NotFoundException;
 import com.example.bank.util.error.NotSaveException;
+import com.example.bank.util.error.TransferBetweenEqualException;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.AccessLevel;
 import lombok.NonNull;
@@ -22,8 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-import static com.example.bank.util.Constants.MINUS;
-import static com.example.bank.util.Constants.PLUS;
+import static com.example.bank.util.Constant.MINUS;
+import static com.example.bank.util.Constant.PLUS;
 
 /**
  * @author Filippova_Viktoria
@@ -36,11 +38,10 @@ import static com.example.bank.util.Constants.PLUS;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AccountServiceImpl implements AccountService {
 
-//    @PersistenceContext
-//    EntityManager entityManager;
     AccountMapper mapper = Mappers.getMapper(AccountMapper.class);
     AccountRepo repo;
     ClientService clientService;
+    JwtUtil jwtUtil;
 
     @Value("${jkx.address:}")
     String jkx;
@@ -49,9 +50,9 @@ public class AccountServiceImpl implements AccountService {
     @Value("${tax.address:}")
     String tax;
 
-    public Optional<AccountDto> addAccount(String username) {
-        log.info("Start add account to client with username: {}", username);
-        return clientService.getClientByUsername(username)
+    public Optional<AccountDto> addAccount() {
+        log.info("Start add account to client");
+        return clientService.getClientByUsername(jwtUtil.getCurrentUsername())
                 .map(clientDto -> {
                     AccountDto account = createAccount(clientDto);
                     clientDto.getAccounts().add(account);
@@ -136,6 +137,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public void transferBetweenAccounts(Long fromId, Long toId, Long money,
                                         @Nullable String comment) {
+        if (fromId.equals(toId)) throw new TransferBetweenEqualException();
         update(fromId, money, MINUS, comment);
         update(toId, money, PLUS, comment);
     }
@@ -164,9 +166,6 @@ public class AccountServiceImpl implements AccountService {
                     return entity;
                 });
     }
-
-//        AccountEntity accountEntity = entityManager.find(AccountEntity.class, 534L);
-//        entityManager.lock(accountEntity, LockModeType.OPTIMISTIC);
 
     private Optional<AccountDto> save(AccountDto accountDto) {
         log.info("Start save account");

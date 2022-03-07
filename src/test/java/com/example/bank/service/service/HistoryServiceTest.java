@@ -7,8 +7,8 @@ import com.example.bank.util.error.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,7 +34,7 @@ public class HistoryServiceTest extends AbstractIntegrationTest {
     public void getHistory_validId() {
         Long id = createHistoryDto().getAccountId();
 
-        Optional<Set<HistoryDto>> res = service.getHistory(id);
+        Optional<List<HistoryDto>> res = service.getHistory(id);
 
         assertTrue(res.isPresent());
         assertTrue(res.get().size() > 0);
@@ -42,7 +42,7 @@ public class HistoryServiceTest extends AbstractIntegrationTest {
 
     @Test
     public void getAllHistory() {
-        Optional<Set<HistoryDto>> res = service.getAllHistory();
+        Optional<List<HistoryDto>> res = service.getAllHistory();
 
         assertTrue(res.isPresent());
         assertTrue(res.get().size() > 0);

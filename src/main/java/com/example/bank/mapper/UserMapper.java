@@ -6,7 +6,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.List;
-import java.util.Set;
 
 @Mapper
 public interface UserMapper {
@@ -17,7 +16,5 @@ public interface UserMapper {
     @Mapping(target = "active", source = "active", defaultValue = "true")
     UserEntity dtoToEntity(UserDto dto);
 
-    Set<UserDto> entitySetToDtoSet(List<UserEntity> entities);
-
-    Set<UserDto> entitySetToDtoSet(Set<UserEntity> entities);
+    List<UserDto> entityToDto(List<UserEntity> entities);
 }

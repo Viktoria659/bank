@@ -37,7 +37,7 @@ public class ClientController {
     }
 
     @Operation(summary = "Поиск клиента по user's username")
-    @GetMapping("username/{username}")
+    @GetMapping("/username/{username}")
     public ResponseEntity<ClientDto> findByUsername(@Parameter(description = "Username пользователя", example = "username")
                                                     @PathVariable final String username) {
         log.info("Search client by user's username");

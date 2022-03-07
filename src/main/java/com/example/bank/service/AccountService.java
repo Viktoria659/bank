@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AccountService {
-    Optional<AccountDto> addAccount(String username);
+
+    Optional<AccountDto> addAccount();
 
     Optional<AccountDto> getAccount(Long id);
 

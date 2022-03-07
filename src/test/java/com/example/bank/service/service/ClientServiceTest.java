@@ -7,8 +7,8 @@ import com.example.bank.util.error.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static com.example.bank.service.util.TestUtil.toJson;
 import static org.junit.jupiter.api.Assertions.*;
@@ -62,18 +62,23 @@ public class ClientServiceTest extends AbstractIntegrationTest {
         Optional<ClientDto> res = clientService.getClient(clientDto.getId());
 
         assertTrue(res.isPresent());
-        assertEquals(toJson(clientDto), toJson(res.get()));
+        assertEquals(toJson(accountToNull(clientDto)), toJson(accountToNull(res.get())));
     }
 
     @Test
     public void getClients() {
-        Optional<Set<ClientDto>> clients = clientService.getClients();
+        Optional<List<ClientDto>> clients = clientService.getClients();
 
         assertTrue(clients.isPresent());
         assertTrue(clients.get().size() > 0);
     }
 
-    public ClientDto getClientDto() {
+    private ClientDto getClientDto() {
         return clientService.getClients().stream().findAny().get().iterator().next();
+    }
+
+    private ClientDto accountToNull(ClientDto clientDto) {
+        clientDto.getAccounts().clear();
+        return clientDto;
     }
 }

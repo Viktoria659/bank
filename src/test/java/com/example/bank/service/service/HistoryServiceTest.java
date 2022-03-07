@@ -13,6 +13,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class HistoryServiceTest extends AbstractIntegrationTest {
+
     @Autowired
     HistoryService service;
 

@@ -3,12 +3,10 @@ package com.example.bank.service.service;
 import com.example.bank.dto.ClientDto;
 import com.example.bank.dto.RoleDto;
 import com.example.bank.dto.UserDto;
-import com.example.bank.service.UserService;
 import com.example.bank.service.util.AbstractIntegrationTest;
 import com.example.bank.util.error.NotFoundException;
 import com.example.bank.util.error.NullRequiredFieldException;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,9 +16,6 @@ import static com.example.bank.service.util.TestUtil.toJson;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UserServiceTest extends AbstractIntegrationTest {
-
-    @Autowired
-    UserService userService;
 
     @Test
     public void addUserBase_withEmptyUser_error() {
@@ -223,8 +218,14 @@ public class UserServiceTest extends AbstractIntegrationTest {
 
     @Test
     public void updateUser_successfulUpdateUser() {
-        Long userId = getUserId();
-        UserDto userDto = createUserDto(userId).toBuilder().role(RoleDto.builder().roleId(1L).build()).build();
+        Optional<UserDto> newUser = userService.addUserBase(createUserDto(null));
+        assertTrue(newUser.isPresent());
+
+        String username = String.valueOf(UUID.randomUUID());
+        UserDto userDto = createUserDto(newUser.get().getId()).toBuilder()
+                .id(newUser.get().getId())
+                .username(username)
+                .role(RoleDto.builder().roleId(1L).build()).build();
 
         Optional<UserDto> res = toPasswordAndClientAccountsNull(userService.update(userDto).get().toBuilder()
                 .role(RoleDto.builder().roleId(1L).build())
@@ -236,10 +237,6 @@ public class UserServiceTest extends AbstractIntegrationTest {
 
     private UserDto getUser() {
         return userService.getUsers().stream().findAny().get().iterator().next();
-    }
-
-    private Long getUserId() {
-        return userService.getUsers().stream().findAny().get().iterator().next().getId();
     }
 
     private UserDto createWithoutAccountsAndPassword(UserDto userDto) {
@@ -257,7 +254,7 @@ public class UserServiceTest extends AbstractIntegrationTest {
 
     private UserDto createUserDto(Long clientId) {
         String username = String.valueOf(UUID.randomUUID());
-        ;
+
         return UserDto.builder()
                 .id(clientId)
                 .username(username)

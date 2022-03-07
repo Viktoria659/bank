@@ -2,6 +2,8 @@ package com.example.bank.service.util;
 
 import com.example.bank.dto.UserDto;
 import com.example.bank.service.UserService;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +22,11 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 @Sql(scripts = {"/before.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(scripts = {"/after.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @SpringBootTest
+@FieldDefaults(level = AccessLevel.PROTECTED)
 public class AbstractIntegrationTest extends AbstractJUnit4SpringContextTests {
 
     MockMvc mvc;
+    MockMvc mvcWithoutAuth;
     @Autowired
     WebApplicationContext context;
     @Autowired
@@ -33,6 +37,9 @@ public class AbstractIntegrationTest extends AbstractJUnit4SpringContextTests {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
+                .build();
+        mvcWithoutAuth = MockMvcBuilders
+                .webAppContextSetup(context)
                 .build();
 
         UserDto user = userService.getUsers().stream().findAny().get().iterator().next();

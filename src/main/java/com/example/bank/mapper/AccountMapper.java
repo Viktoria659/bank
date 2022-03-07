@@ -6,7 +6,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.List;
-import java.util.Set;
 
 @Mapper
 public interface AccountMapper {
@@ -18,7 +17,5 @@ public interface AccountMapper {
     @Mapping(target = "client.user.client", ignore = true)
     AccountEntity dtoToEntity(AccountDto dto);
 
-    Set<AccountDto> entitySetToDtoSet(List<AccountEntity> entities);
-
-    Set<AccountDto> entitySetToDtoSet(Set<AccountEntity> entities);
+    List<AccountDto> entityToDto(List<AccountEntity> entities);
 }

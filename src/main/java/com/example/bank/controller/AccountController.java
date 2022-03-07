@@ -12,7 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 import static com.example.bank.util.Constants.MINUS;
 import static com.example.bank.util.Constants.PLUS;
@@ -48,7 +50,7 @@ public class AccountController {
 
     @Operation(summary = "Поиск всех счетов")
     @GetMapping("/get-accounts")
-    public ResponseEntity<Set<AccountDto>> getAccounts() {
+    public ResponseEntity<List<AccountDto>> getAccounts() {
         log.info("Search all accounts");
         return service.getAccounts()
                 .map(ResponseEntity::ok)
@@ -57,7 +59,7 @@ public class AccountController {
 
     @Operation(summary = "Поиск всех счетов клиента")
     @GetMapping("/get-accounts/{username}")
-    public ResponseEntity<Set<AccountDto>> getAccountsByUserUsername(@Parameter(description = "Username пользователя")
+    public ResponseEntity<List<AccountDto>> getAccountsByUserUsername(@Parameter(description = "Username пользователя")
                                                                      @PathVariable final String username) {
         log.info("Search all accounts");
         return service.getAccountsByUserUsername(username)

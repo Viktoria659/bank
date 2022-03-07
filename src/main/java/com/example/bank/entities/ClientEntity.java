@@ -5,13 +5,14 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -32,7 +33,9 @@ public class ClientEntity implements Serializable {
     String surname;
 
     String patronymic;
-    Date birthday;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
+    LocalDateTime birthday;
 
     @OneToOne(cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
@@ -41,5 +44,5 @@ public class ClientEntity implements Serializable {
 
     @OneToMany
     @JoinColumn(name = "account_id", referencedColumnName = "client_id")
-    Set<AccountEntity> accounts = new HashSet<>();
+    List<AccountEntity> accounts = new ArrayList<>();
 }

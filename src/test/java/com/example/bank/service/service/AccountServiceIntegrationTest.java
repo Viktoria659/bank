@@ -8,8 +8,8 @@ import com.example.bank.util.error.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static com.example.bank.service.util.TestUtil.toJson;
 import static com.example.bank.util.Constants.MINUS;
@@ -84,7 +84,7 @@ public class AccountServiceIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void getAccounts() {
-        Optional<Set<AccountDto>> accounts = accountService.getAccounts();
+        Optional<List<AccountDto>> accounts = accountService.getAccounts();
 
         assertTrue(accounts.isPresent());
         assertTrue(accounts.get().size() > 0);

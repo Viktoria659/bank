@@ -8,7 +8,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.List;
-import java.util.Set;
 
 @Mapper
 public interface ClientMapper {
@@ -18,7 +17,5 @@ public interface ClientMapper {
 
     ClientEntity dtoToEntity(ClientDto dto);
 
-    Set<ClientDto> entitySetToDtoSet(List<ClientEntity> entities);
-
-    Set<AccountDto> entitySetToDtoSetAccount(List<AccountEntity> entities);
+    List<ClientDto> entityToDto(List<ClientEntity> entities);
 }

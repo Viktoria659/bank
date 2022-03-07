@@ -6,7 +6,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.List;
-import java.util.Set;
 
 @Mapper
 public interface HistoryMapper {
@@ -17,7 +16,5 @@ public interface HistoryMapper {
 
     HistoryEntity dtoToEntity(HistoryDto dto);
 
-    Set<HistoryDto> entitySetToDtoSet(List<HistoryEntity> entities);
-
-    Set<HistoryDto> entitySetToDtoSet(Set<HistoryEntity> entities);
+    List<HistoryDto> entityToDto(List<HistoryEntity> entities);
 }

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Set;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -29,7 +29,7 @@ public class HistoryController {
 
     @Operation(summary = "История операций со счетом")
     @GetMapping("/{id}")
-    public ResponseEntity<Set<HistoryDto>> getHistory(@Parameter(description = "Идентификатор счёта")
+    public ResponseEntity<List<HistoryDto>> getHistory(@Parameter(description = "Идентификатор счёта")
                                                       @PathVariable final Long id) {
         log.info("Search of account's history");
         return service.getHistory(id)

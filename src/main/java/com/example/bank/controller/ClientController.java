@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Set;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -48,7 +48,7 @@ public class ClientController {
 
     @Operation(summary = "Поиск всех клиентов")
     @GetMapping("/get-clients")
-    public ResponseEntity<Set<ClientDto>> getClients() {
+    public ResponseEntity<List<ClientDto>> getClients() {
         log.info("Search all clients");
         return service.getClients()
                 .map(ResponseEntity::ok)

@@ -12,6 +12,7 @@ import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -26,11 +27,11 @@ public class HistoryServiceImpl implements HistoryService {
     HistoryMapper mapper = Mappers.getMapper(HistoryMapper.class);
 
     @Override
-    public Optional<Set<HistoryDto>> getHistory(Long id) {
+    public Optional<List<HistoryDto>> getHistory(Long id) {
         log.info("Start found history account by id: {}", id);
-        Set<HistoryDto> dtoSet = mapper.entitySetToDtoSet(repo.findAllByHistoryId_AccountId(id));
-        if (dtoSet.size() > 0) {
-            return Optional.of(dtoSet);
+        List<HistoryDto> dtoList = mapper.entityToDto(repo.findAllByHistoryId_AccountIdOrderByHistoryId_Rev(id));
+        if (dtoList.size() > 0) {
+            return Optional.of(dtoList);
         } else {
             log.warn("Account by id: {} does not exist!", id);
             throw new NotFoundException(id);
@@ -38,15 +39,15 @@ public class HistoryServiceImpl implements HistoryService {
     }
 
     @Override
-    public Optional<Set<HistoryDto>> getAllHistory() {
+    public Optional<List<HistoryDto>> getAllHistory() {
         log.info("Start found all accounts");
-        Set<HistoryDto> dtoSet = mapper.entitySetToDtoSet(repo.findAll());
-        if (dtoSet.isEmpty()) {
+        List<HistoryDto> dtoList = mapper.entityToDto(repo.findAll());
+        if (dtoList.isEmpty()) {
             log.error("Objects do not exists!");
             return Optional.empty();
         } else {
-            log.info("Was found {} accounts", dtoSet.size());
-            return Optional.of(dtoSet);
+            log.info("Was found {} accounts", dtoList.size());
+            return Optional.of(dtoList);
         }
     }
 }

@@ -3,9 +3,9 @@ package com.example.bank.dto;
 import lombok.Builder;
 import lombok.Value;
 
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 @Value
 @Builder(toBuilder = true)
@@ -16,7 +16,7 @@ public class ClientDto {
     String patronymic;
     Date birthday;
     UserDto user;
-    Set<AccountDto> accounts = new HashSet<>();
+    List<AccountDto> accounts = new ArrayList<>();
 
     @Override
     public String toString() {

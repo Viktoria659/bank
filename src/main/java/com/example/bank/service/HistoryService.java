@@ -2,11 +2,11 @@ package com.example.bank.service;
 
 import com.example.bank.dto.HistoryDto;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public interface HistoryService {
-    Optional<Set<HistoryDto>> getHistory(Long id);
+    Optional<List<HistoryDto>> getHistory(Long id);
 
-    Optional<Set<HistoryDto>> getAllHistory();
+    Optional<List<HistoryDto>> getAllHistory();
 }

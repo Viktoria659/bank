@@ -19,8 +19,8 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static com.example.bank.util.Constants.MINUS;
 import static com.example.bank.util.Constants.PLUS;
@@ -80,25 +80,38 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Optional<Set<AccountDto>> getAccounts() {
+    public Optional<List<AccountDto>> getAccounts() {
         log.info("Start found all accounts");
-        Set<AccountDto> dtoSet = mapper.entitySetToDtoSet(repo.findAll());
-        if (dtoSet.isEmpty()) {
+        List<AccountDto> dtoList = mapper.entityToDto(repo.findAll());
+        if (dtoList.isEmpty()) {
             log.error("Objects do not exists!");
             return Optional.empty();
         } else {
-            log.info("Was found {} accounts", dtoSet.size());
-            return Optional.of(dtoSet);
+            log.info("Was found {} accounts", dtoList.size());
+            return Optional.of(dtoList);
         }
     }
 
     @Override
-    public Optional<Set<AccountDto>> getAccountsByUserUsername(String username) {
+    public Optional<List<AccountDto>> getAccountsByCurrentUser() {
+        String username = jwtUtil.getCurrentUsername();
+        log.info("Start found accounts of a current user with username: {}", username);
+        List<AccountDto> dtoList = mapper.entityToDto(repo.findAllByClient_User_UsernameOrderByAccountId(username));
+        if (dtoList.size() > 0) {
+            return Optional.of(dtoList);
+        } else {
+            log.warn("Client with username {} hasn't accounts!", username);
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<List<AccountDto>> getAccountsByUserUsername(String username) {
         log.info("Start found accounts of a client with username: {}", username);
         isExist(username);
-        Set<AccountDto> dtoSet = mapper.entitySetToDtoSet(repo.findAllByClient_User_Username(username));
-        if (dtoSet.size() > 0) {
-            return Optional.of(dtoSet);
+        List<AccountDto> dtoList = mapper.entityToDto(repo.findAllByClient_User_UsernameOrderByAccountId(username));
+        if (dtoList.size() > 0) {
+            return Optional.of(dtoList);
         } else {
             log.warn("Client with username {} hasn't accounts!", username);
             return Optional.empty();

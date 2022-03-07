@@ -2,17 +2,19 @@ package com.example.bank.service;
 
 import com.example.bank.dto.AccountDto;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public interface AccountService {
     Optional<AccountDto> addAccount(String username);
 
     Optional<AccountDto> getAccount(Long id);
 
-    Optional<Set<AccountDto>> getAccounts();
+    Optional<List<AccountDto>> getAccounts();
 
-    Optional<Set<AccountDto>> getAccountsByUserUsername(String username);
+    Optional<List<AccountDto>> getAccountsByUserUsername(String username);
+
+    Optional<List<AccountDto>> getAccountsByCurrentUser();
 
     Optional<AccountDto> update(Long accountId, Long money, byte operand, String comment);
 

@@ -18,7 +18,6 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
 import java.util.Optional;
-import java.util.Set;
 
 import static com.example.bank.service.util.TestUtil.toJson;
 import static com.example.bank.util.Constants.MINUS;

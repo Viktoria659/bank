@@ -10,8 +10,9 @@ import com.example.bank.util.error.NullRequiredFieldException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+import java.util.UUID;
 
 import static com.example.bank.service.util.TestUtil.toJson;
 import static org.junit.jupiter.api.Assertions.*;
@@ -131,7 +132,7 @@ public class UserServiceTest extends AbstractIntegrationTest {
 
     @Test
     public void getUsers_successfulGetUsers() {
-        Optional<Set<UserDto>> users = userService.getUsers();
+        Optional<List<UserDto>> users = userService.getUsers();
 
         assertTrue(users.isPresent());
         assertTrue(users.get().size() > 0);
